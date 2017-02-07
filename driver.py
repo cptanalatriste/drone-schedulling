@@ -4,98 +4,127 @@ This is the file that will coordinate the execution of the solution
 
 import utils
 import test
+import io
+
+import math
+from scipy.spatial import distance
 
 
-def read_configuration(file_name):
-    warehouse_data_items = 2
-    order_data_items = 3
+def get_load_weight(product_type, to_deliver, weight_catalog):
+    print "weight_catalog ", weight_catalog
 
-    warehouse_locations = []
-    warehouse_storage = []
-    order_destinations = []
-
-    order_items = []
-    order_product_types = []
-
-    warehouse_section_start = None
-    warehouse_section_end = None
-
-    with open(file_name) as file:
-        for line_number, line in enumerate(file):
-
-            if line_number == 0:
-                rows, columns, drones, turns, max_payload = utils.split_and_cast(line)
-                print "rows ", rows, " columns ", columns, " drones ", drones, " turns ", \
-                    turns, " max_payload ", max_payload
-            elif line_number == 1:
-                product_types = int(line)
-                print "product_types ", product_types
-            elif line_number == 2:
-                types_weight = utils.split_and_cast(line)
-                print "types_weight ", types_weight
-            elif line_number == 3:
-                warehouses = int(line)
-                print "warehouses ", warehouses
-                warehouse_section_start = 4
-                warehouse_section_end = line_number + warehouses * 2
-                order_section_start = warehouse_section_end + 1
-            elif warehouse_section_start <= line_number <= warehouse_section_end:
-
-                if line_number % warehouse_data_items == 0:
-                    warehouse_locations.append(utils.split_and_cast(line))
-                else:
-                    warehouse_storage.append(utils.split_and_cast(line))
-            elif line_number == order_section_start:
-                orders = int(line)
-                print "orders ", orders
-            elif line_number > order_section_start:
-                if line_number % order_data_items == 0:
-                    order_destinations.append(utils.split_and_cast(line))
-                elif line_number % order_data_items == 1:
-                    order_items.append(int(line))
-                elif line_number % order_data_items == 2:
-                    order_product_types.append(utils.split_and_cast(line))
-
-    print "warehouse_locations ", warehouse_locations
-    print "warehouse_storage ", warehouse_storage
-    print "order_destinations ", order_destinations
-    print "order_items ", order_items
-    print "order_product_types ", order_product_types
-
-    return {"rows": rows,
-            "columns": columns,
-            "drones": drones,
-            "turns": turns,
-            "max_payload": max_payload,
-            "product_types": product_types,
-            "types_weight": types_weight,
-            "warehouses": warehouses,
-            "orders": orders,
-            "warehouse_locations": warehouse_locations,
-            "warehouse_storage": warehouse_storage,
-            "order_destinations": order_destinations,
-            "order_items": order_items,
-            "order_product_types": order_product_types}
+    return weight_catalog[product_type] * to_deliver
 
 
-def write_solution(solution):
-    solution_as_string = str(len(solution)) + "\n"
+def load(drone, warehouse, product_type, to_deliver, weight_catalog, max_payload):
+    total_weight = get_load_weight(product_type, to_deliver, weight_catalog)
 
-    for command in solution[1:]:
-        solution_as_string += " ".join([str(int_value) for int_value in [command["drone_id"], command["command"],
-                                                                         command["target_id"], command["product_type"],
-                                                                         command["number_items"]]]) + "\n"
+    if drone.current_load + total_weight > max_payload:
+        raise ValueError(
+            'The capacity of drone was exceed. Current load: ' + str(drone.current_load) + " Intended Load: " + str(
+                total_weight))
 
-    print "solution_as_string: \n", solution_as_string
+    action_cost = 1
+    turns = action_cost + math.ceil(
+        distance.euclidean((drone.x_possiton, drone.y_possition), (warehouse.x_possition, warehouse.y_possition)))
+    command = {"drone_id": drone.id,
+               "command": utils.LOAD_COMMAND,
+               "target_id": warehouse.id,
+               "product_type": product_type,
+               "to_deliver": to_deliver}
 
-    with open("solution.txt", "w") as file:
-        file.write(solution_as_string)
+    drone.x_possiton = warehouse.x_possition
+    drone.y_possition = warehouse.y_possition
+    drone.current_load = drone.current_load + total_weight
+
+    warehouse.storage_levels[product_type] = warehouse.storage_levels[product_type] - to_deliver
+
+    return turns, command
+
+
+def load_and_deliver(drone, warehouse, order, product_type, to_deliver, weight_catalog, max_payload):
+    turns = 0
+    commands = []
+
+    load_turns, load_command = load(drone=drone, warehouse=warehouse, product_type=product_type, to_deliver=to_deliver,
+                                    weight_catalog=weight_catalog, max_payload=max_payload)
+    commands.append(load_command)
+
+    print "load_turns ", load_turns
+    print "load_command ", load_command
+    print "warehouse ", warehouse
+    print "drone ", drone
+
+    return turns, commands
+
+
+def deliver_order(drone, turns, order, warehouses, weight_catalog, max_payload):
+    commands = []
+    turn_stock = turns
+
+    for product_type, pending_items in enumerate(order.pending_levels):
+        print "Trying to deliver ", pending_items, " of type ", product_type
+
+        to_deliver = pending_items
+
+        if to_deliver > 0:
+            for warehouse in warehouses:
+                current_stock = warehouse.storage_levels[product_type]
+
+                if current_stock > 0:
+                    if current_stock >= to_deliver:
+                        turns = load_and_deliver(drone=drone, warehouse=warehouse, order=order,
+                                                 product_type=product_type, to_deliver=to_deliver,
+                                                 weight_catalog=weight_catalog, max_payload=max_payload)
+                    elif current_stock < to_deliver:
+                        pass
+
+    return commands
+
+
+def schedule_drones(problem_configuration):
+    warehouses = []
+    orders = []
+    drone_list = []
+
+    weight_catalog = problem_configuration["types_weight"]
+    max_payload = problem_configuration["max_payload"]
+    product_types = problem_configuration["product_types"]
+
+    for id, location in enumerate(problem_configuration["warehouse_locations"]):
+        warehouse = utils.Warehouse(id=id, x_possition=location[0], y_possition=location[1],
+                                    storage_levels=problem_configuration["warehouse_storage"][id])
+        warehouses.append(warehouse)
+        print warehouse
+
+    for id, destination in enumerate(problem_configuration["order_destinations"]):
+        order = utils.OrderState(id=id, x_possition=location[0], y_possition=location[1],
+                                 order_product_types=problem_configuration["order_product_types"][id],
+                                 product_types=product_types)
+        orders.append(order)
+        print order
+
+    intial_possition = warehouses[0].x_possition, warehouses[0].y_possition
+    drones = problem_configuration["drones"]
+    for id in range(drones):
+        drone = utils.Drone(id=id, x_possition=intial_possition[0], y_possition=warehouses[0].y_possition,
+                            current_load=0)
+        drone_list.append(drone)
+        print drone
+
+    turns = problem_configuration["turns"]
+    max_payload = problem_configuration["max_payload"]
+
+    deliver_order(drone=drone_list[0], turns=turns, order=orders[0],
+                  warehouses=warehouses, weight_catalog=weight_catalog, max_payload=max_payload)
 
 
 if __name__ == "__main__":
-    problem_configuration = read_configuration(test.get_input_file())
+    problem_configuration = io.read_configuration(test.get_input_file())
+
+    solution = schedule_drones(problem_configuration)
 
     solution = test.get_solution()
-    write_solution(solution)
+    io.write_solution(solution)
 
     print "problem_configuration ", problem_configuration
