@@ -80,7 +80,7 @@ def read_configuration(file_name):
 def write_solution(solution):
     solution_as_string = str(len(solution)) + "\n"
 
-    for command in solution[1:]:
+    for command in solution:
         solution_as_string += " ".join([str(int_value) for int_value in [command["drone_id"], command["command"],
                                                                          command["target_id"], command["product_type"],
                                                                          command["number_items"]]]) + "\n"
