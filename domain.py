@@ -25,6 +25,7 @@ class OrderState:
         self.x_possition = x_possition
         self.y_possition = y_possition
         self.pending_levels = [0 for _ in range(product_types)]
+        self.score = None
 
         for product_type in order_product_types:
             self.pending_levels[product_type] += 1
@@ -37,6 +38,13 @@ class OrderState:
             order += "Pending for Product Type " + str(product_type) + ": " + str(level) + "\n"
 
         return order
+
+    def is_complete(self):
+        for product_type, pending in enumerate(self.pending_levels):
+            if pending != 0:
+                return False
+
+        return True
 
 
 class Warehouse:

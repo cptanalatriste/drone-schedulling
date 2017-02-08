@@ -1,6 +1,8 @@
 """
 This is the file that will coordinate the execution of the solution
 """
+import math
+
 import utils
 import test
 import io
@@ -107,7 +109,7 @@ def load_and_deliver(drone, warehouse, order, product_type, to_deliver, weight_c
     return turns
 
 
-def deliver_order(drone, turns, order, warehouses, weight_catalog, max_payload):
+def deliver_order(drone, turns, order, warehouses, weight_catalog, max_payload, total_turns):
     turn_stock = turns
 
     for product_type, pending_items in enumerate(order.pending_levels):
@@ -135,6 +137,12 @@ def deliver_order(drone, turns, order, warehouses, weight_catalog, max_payload):
                         to_deliver = to_deliver - current_stock
 
                     turn_stock -= turns
+
+    if order.is_complete():
+        turn_to_deliver = total_turns - turn_stock
+        order.score = math.ceil((total_turns - turn_to_deliver) / float(total_turns) * 100)
+
+        print "Order ", order.id, " was delivered by drone ", drone.id, " at turn ", turn_to_deliver, ". Score: ", order.score
 
     return turn_stock
 
@@ -176,8 +184,12 @@ def schedule_drones(problem_configuration):
 
     for order in orders:
         pending_turns = deliver_order(drone=lone_ranger, turns=turns_left, order=order,
-                                      warehouses=warehouses, weight_catalog=weight_catalog, max_payload=max_payload)
+                                      warehouses=warehouses, weight_catalog=weight_catalog, max_payload=max_payload,
+                                      total_turns=turns)
         turns_left = pending_turns
+
+    total_score = sum([order.score for order in orders])
+    print "Total score: ", total_score
 
     command_list = []
     for drone in drone_list:
