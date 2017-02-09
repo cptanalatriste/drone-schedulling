@@ -48,11 +48,13 @@ def read_configuration(file_name):
                 orders = int(line)
                 print "orders ", orders
             elif line_number > order_section_start:
-                if line_number % order_data_items == 0:
+                relative_possition = line_number - order_section_start
+
+                if relative_possition % order_data_items == 1:
                     order_destinations.append(utils.split_and_cast(line))
-                elif line_number % order_data_items == 1:
+                elif relative_possition % order_data_items == 2:
                     order_items.append(int(line))
-                elif line_number % order_data_items == 2:
+                elif relative_possition % order_data_items == 0:
                     order_product_types.append(utils.split_and_cast(line))
 
     print "warehouse_locations ", warehouse_locations
@@ -85,7 +87,7 @@ def write_solution(solution):
                                                                          command["target_id"], command["product_type"],
                                                                          command["number_items"]]]) + "\n"
 
-    print "solution_as_string: \n", solution_as_string
+    # print "solution_as_string: \n", solution_as_string
 
     with open("solution.txt", "w") as file:
         file.write(solution_as_string)

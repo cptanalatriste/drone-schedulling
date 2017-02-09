@@ -3,14 +3,22 @@ Classes for domain representation.
 """
 
 
+class ProblemContext:
+    def __init__(self, total_turns, weight_catalog, max_payload):
+        self.total_turns = total_turns
+        self.weight_catalog = weight_catalog
+        self.max_payload = max_payload
+
+
 class Drone:
-    def __init__(self, id, x_possition, y_possition, current_load, product_types):
+    def __init__(self, id, x_possition, y_possition, current_load, product_types, available_turns):
         self.id = id
         self.x_possiton = x_possition
         self.y_possition = y_possition
         self.current_load = current_load
         self.current_items = [0 for _ in range(product_types)]
         self.commands = []
+        self.available_turns = available_turns
 
     def __str__(self):
         drone = "Drone Id " + str(self.id) + " Location: (" + str(self.x_possiton) + ", " + str(
@@ -34,10 +42,15 @@ class OrderState:
         order = "Customer Id: " + str(self.id) + " Location: (" + str(self.x_possition) + ", " + str(
             self.y_possition) + ") \n"
 
-        for product_type, level in enumerate(self.pending_levels):
-            order += "Pending for Product Type " + str(product_type) + ": " + str(level) + "\n"
-
+        # order += self.get_pending_products()
         return order
+
+    def get_pending_products(self):
+        pending = ""
+        for product_type, level in enumerate(self.pending_levels):
+            pending += "Pending for Product Type " + str(product_type) + ": " + str(level) + "\n"
+
+        return pending
 
     def is_complete(self):
         for product_type, pending in enumerate(self.pending_levels):
@@ -58,7 +71,12 @@ class Warehouse:
         warehouse = "Warehouse Id: " + str(self.id) + " Location: (" + str(self.x_possition) + ", " + str(
             self.y_possition) + ")\n"
 
-        for product_type, level in enumerate(self.storage_levels):
-            warehouse += "Level for Product Type " + str(product_type) + ": " + str(level) + "\n"
-
+        # warehouse += self.get_storage_levels()
         return warehouse
+
+    def get_storage_levels(self):
+        levels = ""
+        for product_type, level in enumerate(self.storage_levels):
+            levels += "Level for Product Type " + str(product_type) + ": " + str(level) + "\n"
+
+        return levels
