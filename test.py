@@ -5,7 +5,7 @@ import utils
 
 
 def get_input_file():
-    return "example_input.txt"
+    return "task/example_input.txt"
 
 
 def get_solution():
