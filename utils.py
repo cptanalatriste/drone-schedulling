@@ -7,6 +7,7 @@ from scipy.spatial import distance
 
 LOAD_COMMAND = "L"
 DELIVER_COMMAND = "D"
+LONE_RANGER = 0
 
 
 def get_load_weight(product_type, to_deliver, weight_catalog):

@@ -80,3 +80,46 @@ class Warehouse:
             levels += "Level for Product Type " + str(product_type) + ": " + str(level) + "\n"
 
         return levels
+
+
+def get_orders(problem_configuration):
+    product_types = problem_configuration["product_types"]
+    orders = []
+
+    for id, destination in enumerate(problem_configuration["order_destinations"]):
+        order = OrderState(id=id, x_possition=destination[0], y_possition=destination[1],
+                           order_product_types=problem_configuration["order_product_types"][id],
+                           product_types=product_types)
+        orders.append(order)
+        # print order
+
+    return orders
+
+
+def get_domain_objects(problem_configuration):
+    warehouses = []
+    orders = get_orders(problem_configuration)
+    drone_list = []
+
+    for id, location in enumerate(problem_configuration["warehouse_locations"]):
+        warehouse = Warehouse(id=id, x_possition=location[0], y_possition=location[1],
+                              storage_levels=problem_configuration["warehouse_storage"][id])
+        warehouses.append(warehouse)
+        # print warehouse
+
+    intial_possition = warehouses[0].x_possition, warehouses[0].y_possition
+    drones = problem_configuration["drones"]
+    turns = problem_configuration["turns"]
+    product_types = problem_configuration["product_types"]
+
+    for id in range(drones):
+        drone = Drone(id=id, x_possition=intial_possition[0], y_possition=warehouses[0].y_possition,
+                      current_load=0, product_types=product_types, available_turns=turns)
+        drone_list.append(drone)
+        # print drone
+
+    max_payload = problem_configuration["max_payload"]
+    weight_catalog = problem_configuration["types_weight"]
+    problem_context = ProblemContext(max_payload=max_payload, weight_catalog=weight_catalog, total_turns=turns)
+
+    return problem_context, warehouses, drone_list, orders
