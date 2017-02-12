@@ -1,6 +1,8 @@
 """
 Classes for domain representation.
 """
+import driver
+import utils
 
 
 class ProblemContext:
@@ -18,13 +20,26 @@ class Drone:
         self.current_load = current_load
         self.current_items = [0 for _ in range(product_types)]
         self.commands = []
-        self.available_turns = available_turns
 
     def __str__(self):
         drone = "Drone Id " + str(self.id) + " Location: (" + str(self.x_possiton) + ", " + str(
             self.y_possition) + " Current Load: " + str(self.current_load) + ") \n"
 
         return drone
+
+    def load(self, warehouse, product_type, to_deliver):
+        self.commands.append({"drone_id": self.id,
+                              "command": utils.LOAD_COMMAND,
+                              "target_id": warehouse.id,
+                              "product_type": product_type,
+                              "number_items": to_deliver})
+
+    def deliver(self, order, product_type, to_deliver):
+        self.commands.append({"drone_id": self.id,
+                              "command": utils.DELIVER_COMMAND,
+                              "target_id": order.id,
+                              "product_type": product_type,
+                              "number_items": to_deliver})
 
 
 class OrderState:
@@ -42,13 +57,15 @@ class OrderState:
         order = "Customer Id: " + str(self.id) + " Location: (" + str(self.x_possition) + ", " + str(
             self.y_possition) + ") \n"
 
-        # order += self.get_pending_products()
+        if driver.DEBUG:
+            order += self.get_pending_products()
         return order
 
     def get_pending_products(self):
         pending = ""
         for product_type, level in enumerate(self.pending_levels):
-            pending += "Pending for Product Type " + str(product_type) + ": " + str(level) + "\n"
+            if level != 0:
+                pending += "Pending for Product Type " + str(product_type) + ": " + str(level) + "\n"
 
         return pending
 

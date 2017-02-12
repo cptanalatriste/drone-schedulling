@@ -1,6 +1,7 @@
 """
 Optimization algorithm collection.
 """
+import dronesim
 
 RANDOM_SOLUTIONS = 100
 
@@ -20,9 +21,8 @@ def random_optimizer(problem_configuration):
 
         random.shuffle(orders)
 
-        lone_ranger = drones[0]
-        total_score, command_list = driver.dispatch_in_order(drone=lone_ranger, orders=orders, warehouses=warehouses,
-                                                             problem_context=problem_context)
+        total_score, command_list = dronesim.lone_ranger_simulation(drones=drones, orders=orders, warehouses=warehouses,
+                                                                    problem_context=problem_context)
 
         if total_score > best_score:
             best_score = total_score
