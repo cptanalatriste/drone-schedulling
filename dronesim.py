@@ -93,7 +93,7 @@ class Simulator:
                 next_event = active_drone_process.send(next_event_turn)
             except StopIteration:
                 print "No more events for drone ", drone_id
-                del self.process_list[drone_id]
+                # del self.process_list[drone_id]
             else:
                 self.events.put(next_event)
         else:
@@ -114,3 +114,21 @@ def lone_ranger_simulation(drones, orders, warehouses, problem_context):
     simulation.run(total_turns=total_turns)
 
     return utils.get_schedule_results([lone_ranger], orders)
+
+
+def egalitarian_strategy(drones, orders, warehouses, problem_context):
+    print "Starting egalitarian simulation ..."
+
+    process_list = []
+    total_turns = problem_context.total_turns
+
+    tasks_per_drone = len(orders) / len(drones)
+    drone_tasks = [orders[start: start + tasks_per_drone] for start in xrange(0, len(orders), tasks_per_drone)]
+
+    for index, drone in enumerate(drones):
+        process_list.append(drone_process(drone=drone, orders=drone_tasks[index], warehouses=warehouses,
+                                          problem_context=problem_context))
+
+    simulation = Simulator(process_list=process_list)
+    simulation.run(total_turns=total_turns)
+    return utils.get_schedule_results(drones, orders)
