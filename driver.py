@@ -17,14 +17,15 @@ def schedule_drones(problem_configuration):
 
 
 def main():
-    problem_configuration = io.read_configuration("inputs/busy_day.in")
+    input_instance = "busy_day"
+    # input_instance = "example_input"
+
     # problem_configuration = io.read_configuration("inputs/mother_of_all_warehouses.in")
     # problem_configuration = io.read_configuration("inputs/redundancy.in")
 
-    # problem_configuration = io.read_configuration("task/example_input.txt")
-
+    problem_configuration = io.read_configuration(input_instance)
     solution = schedule_drones(problem_configuration)
-    io.write_solution(solution)
+    io.write_solution(solution, input_instance)
 
 
 if __name__ == "__main__":

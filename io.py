@@ -4,6 +4,9 @@ File operations module
 
 import utils
 
+INPUT_DIR = "inputs/"
+INPUT_EXTENSION = ".in"
+
 
 def read_configuration(file_name):
     warehouse_data_items = 2
@@ -19,7 +22,8 @@ def read_configuration(file_name):
     warehouse_section_start = None
     warehouse_section_end = None
 
-    with open(file_name) as file:
+    path = INPUT_DIR + file_name + INPUT_EXTENSION
+    with open(path) as file:
         for line_number, line in enumerate(file):
 
             if line_number == 0:
@@ -63,7 +67,8 @@ def read_configuration(file_name):
     print "order_items ", order_items
     print "order_product_types ", order_product_types
 
-    return {"rows": rows,
+    return {"file_name": file_name,
+            "rows": rows,
             "columns": columns,
             "drones": drones,
             "turns": turns,
@@ -79,7 +84,7 @@ def read_configuration(file_name):
             "order_product_types": order_product_types}
 
 
-def write_solution(solution):
+def write_solution(solution, output_file="solution"):
     solution_as_string = str(len(solution)) + "\n"
 
     for command in solution:
@@ -89,5 +94,8 @@ def write_solution(solution):
 
     # print "solution_as_string: \n", solution_as_string
 
-    with open("solution.txt", "w") as file:
+    path = output_file + ".out"
+    with open(path, "w") as file:
         file.write(solution_as_string)
+
+    print "Solution written to file ", path

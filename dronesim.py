@@ -92,8 +92,8 @@ class Simulator:
             try:
                 next_event = active_drone_process.send(next_event_turn)
             except StopIteration:
-                print "No more events for drone ", drone_id
-                # del self.process_list[drone_id]
+                if driver.DEBUG:
+                    print "No more events for drone ", drone_id
             else:
                 self.events.put(next_event)
         else:
@@ -128,6 +128,11 @@ def egalitarian_strategy(drones, orders, warehouses, problem_context):
     for index, drone in enumerate(drones):
         process_list.append(drone_process(drone=drone, orders=drone_tasks[index], warehouses=warehouses,
                                           problem_context=problem_context))
+
+    if driver.DEBUG:
+        print "Warehouses at simulation start: "
+        for warehouse in warehouses:
+            print warehouse
 
     simulation = Simulator(process_list=process_list)
     simulation.run(total_turns=total_turns)

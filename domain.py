@@ -6,10 +6,11 @@ import utils
 
 
 class ProblemContext:
-    def __init__(self, total_turns, weight_catalog, max_payload):
+    def __init__(self, total_turns, weight_catalog, max_payload, file_name):
         self.total_turns = total_turns
         self.weight_catalog = weight_catalog
         self.max_payload = max_payload
+        self.file_name = file_name
 
 
 class Drone:
@@ -82,13 +83,13 @@ class Warehouse:
         self.id = id
         self.x_possition = x_possition
         self.y_possition = y_possition
-        self.storage_levels = storage_levels
+        self.storage_levels = list(storage_levels)
 
     def __str__(self):
         warehouse = "Warehouse Id: " + str(self.id) + " Location: (" + str(self.x_possition) + ", " + str(
             self.y_possition) + ")\n"
 
-        # warehouse += self.get_storage_levels()
+        warehouse += self.get_storage_levels()
         return warehouse
 
     def get_storage_levels(self):
@@ -122,7 +123,11 @@ def get_domain_objects(problem_configuration):
         warehouse = Warehouse(id=id, x_possition=location[0], y_possition=location[1],
                               storage_levels=problem_configuration["warehouse_storage"][id])
         warehouses.append(warehouse)
-        # print warehouse
+
+        if driver.DEBUG:
+            print "Warehouse after config reading"
+            print "problem_configuration['warehouse_storage'][id] ", problem_configuration["warehouse_storage"][id]
+            print warehouse
 
     intial_possition = warehouses[0].x_possition, warehouses[0].y_possition
     drones = problem_configuration["drones"]
@@ -137,6 +142,8 @@ def get_domain_objects(problem_configuration):
 
     max_payload = problem_configuration["max_payload"]
     weight_catalog = problem_configuration["types_weight"]
-    problem_context = ProblemContext(max_payload=max_payload, weight_catalog=weight_catalog, total_turns=turns)
+    file_name = problem_configuration["file_name"]
+    problem_context = ProblemContext(max_payload=max_payload, weight_catalog=weight_catalog, total_turns=turns,
+                                     file_name=file_name)
 
     return problem_context, warehouses, drone_list, orders
