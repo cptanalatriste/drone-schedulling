@@ -10,7 +10,7 @@ DEBUG = False
 
 def schedule_drones(problem_configuration):
     best_score, command_list = optimizer.random_optimizer(problem_configuration=problem_configuration,
-                                                          strategy=dronesim.egalitarian_strategy)
+                                                             strategy=dronesim.egalitarian_strategy)
 
     print "Best Score: ", best_score
     return command_list

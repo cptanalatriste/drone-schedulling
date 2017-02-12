@@ -25,7 +25,8 @@ def get_load_cost(drone, warehouse, product_type, to_deliver, problem_context):
 
     total_weight = utils.get_load_weight(product_type, to_deliver, problem_context.weight_catalog)
     if drone.current_load + total_weight > problem_context.max_payload:
-        print 'The capacity of drone was exceed. Current load: ' + str(drone.current_load) + " Intended Load: " + str(
+        print 'The capacity of drone ', drone.id, ' was exceed. Current load: ' + str(
+            drone.current_load) + " Intended Load: " + str(
             total_weight), " Max Payload: ", problem_context.max_payload
         return None
 

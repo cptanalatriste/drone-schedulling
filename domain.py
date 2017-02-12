@@ -114,6 +114,15 @@ def get_orders(problem_configuration):
     return orders
 
 
+def get_problem_context(problem_configuration):
+    max_payload = problem_configuration["max_payload"]
+    weight_catalog = problem_configuration["types_weight"]
+    file_name = problem_configuration["file_name"]
+    turns = problem_configuration["turns"]
+    return ProblemContext(max_payload=max_payload, weight_catalog=weight_catalog, total_turns=turns,
+                          file_name=file_name)
+
+
 def get_domain_objects(problem_configuration):
     warehouses = []
     orders = get_orders(problem_configuration)
@@ -140,10 +149,6 @@ def get_domain_objects(problem_configuration):
         drone_list.append(drone)
         # print drone
 
-    max_payload = problem_configuration["max_payload"]
-    weight_catalog = problem_configuration["types_weight"]
-    file_name = problem_configuration["file_name"]
-    problem_context = ProblemContext(max_payload=max_payload, weight_catalog=weight_catalog, total_turns=turns,
-                                     file_name=file_name)
+    problem_context = get_problem_context(problem_configuration)
 
     return problem_context, warehouses, drone_list, orders

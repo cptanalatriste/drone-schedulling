@@ -61,7 +61,9 @@ def drone_process(drone, orders, warehouses, problem_context, start_time=0):
         if order.is_complete():
             order.score = math.ceil(
                 (problem_context.total_turns - time) / float(problem_context.total_turns) * 100)
-            print "Order ", order.id, " was delivered by drone ", drone.id, " at turn ", time, ". Score: ", order.score
+
+            if driver.DEBUG:
+                print "Order ", order.id, " was delivered by drone ", drone.id, " at turn ", time, ". Score: ", order.score
 
 
 class Simulator:
