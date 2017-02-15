@@ -21,7 +21,7 @@ def no_optimization(problem_configuration, strategy):
     return total_score, command_list
 
 
-def annealing_optimizer(problem_configuration, strategy, temperature=10000, cooling=0.95):
+def annealing_optimizer(problem_configuration, strategy, temperature=1000, cooling=0.90):
     best_score = 0
     best_solution = None
 

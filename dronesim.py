@@ -121,11 +121,22 @@ def lone_ranger_simulation(drones, orders, warehouses, problem_context):
 def egalitarian_strategy(drones, orders, warehouses, problem_context):
     print "Starting egalitarian simulation ..."
 
+    initial_warehouse = warehouses[0]
+    orders.sort(
+        key=lambda order: utils.get_distance(order.x_possition, order.y_possition, initial_warehouse.x_possition,
+                                             initial_warehouse.y_possition))
+
+    drone_tasks = [[] for _ in range(len(drones))]
+    current_drone = 0
+    for order in orders:
+        drone_tasks[current_drone].append(order)
+        current_drone += 1
+
+        if current_drone == len(drones):
+            current_drone = 0
+
     process_list = []
     total_turns = problem_context.total_turns
-
-    tasks_per_drone = len(orders) / len(drones)
-    drone_tasks = [orders[start: start + tasks_per_drone] for start in xrange(0, len(orders), tasks_per_drone)]
 
     for index, drone in enumerate(drones):
         process_list.append(drone_process(drone=drone, orders=drone_tasks[index], warehouses=warehouses,
